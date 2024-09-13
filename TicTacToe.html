@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <style>
+        body{
+            background-color: rgb(191, 247, 227);
+            margin:0;
+            padding:0;
+            padding-top:5vh;
+            height:80vh;
+            font-family: 'Comic Sans MS', cursive;
+            text-align: center;
+        }
+        h1{
+            font-size: 40px;
+            font-weight: bold;
+        }
+        .content{
+            width:200px;
+            height:100px;
+            margin:auto;
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            font-size: 1.5rem;
+            position:relative;
+        }
+        .content h2{
+            grid-column-end: 3;
+            grid-column-start: 1;
+        }
+        section{
+            border-radius: 10px;
+            margin:auto;
+            width:400px;
+        }
+        .content .turn{
+            border:1.5px solid;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .content .turn:nth-child(even){
+            border-right: none;
+        }
+       .grid{
+            display:grid;
+            grid-template-columns: repeat(3,auto);
+            width:180px;
+            margin:110px;
+            margin-bottom:10px;
+            margin-top:10px;
+            justify-content: center;   
+       }
+       .align{
+            font-family:  'Comic Sans MS', cursive;
+            width:8rem;
+            height:8rem;
+            box-shadow: 0 0 0 1px black;
+            border:1px solid black;
+            cursor: pointer;
+            line-height: 130px;
+            font-size: 2rem;
+       }
+       .align.highlight{
+        background-color: aquamarine;
+        transition: background-color 0.2s ease;
+       }
+       button{
+            padding: 0.8rem 1.5rem;
+            border: none;
+            color: black;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            margin: 40px;
+            flex:1;
+            display: flex;
+            justify-content: center;
+            margin-left: 100px;
+       }
+       .current-player-x {
+            color: royalblue;
+        }
+        .current-player-o {
+            color: rgb(179, 29, 29);
+        }
+       button:hover{
+        transition: 0.2s;
+        background-color: rgb(152, 88, 212);
+       }
+       .scoreboard{
+        font-size: 1.3rem;
+       }
+       @media (max-width: 600px) {
+            .align {
+                width: 5rem;
+                height: 5rem;
+                font-size: 1.5rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Tic-Tac-Toe</h1>
+    <section>
+        <div class="grid">
+            <div i="0" class="align"></div>
+            <div i="1" class="align"></div>
+            <div i="2" class="align"></div>
+            <div i="3" class="align"></div>
+            <div i="4" class="align"></div>
+            <div i="5" class="align"></div>
+            <div i="6" class="align"></div>
+            <div i="7" class="align"></div>
+            <div i="8" class="align"></div>
+        </div>
+        <h2 class="status"></h2>
+        <button class="restart">Restart Game</button>
+        <div class="strike-line"></div>
+        <div class="scoreboard">
+            <h3>Score</h3>
+            <span>Player X: <span id="playerX-score">0</span></span>
+            <span>Player O: <span id="playerO-score">0</span></span>
+        </div>
+    </section>
+    <script>
+        const display=document.querySelector('.status');
+        let act=true;
+        let cplayer="X";
+        let gameState=["", "", "", "", "", "", "", "", ""];
+        const winmsg = () => `Player ${cplayer} has won!!`;
+        const drawmsg = () => `Game ended in a draw!`;
+        const cplayerturn = () => `It's ${cplayer}'s turn`;
+        display.innerHTML=cplayerturn();
+        document.querySelectorAll('.align').forEach(cell => cell.addEventListener('click', handleCellClick));
+        document.querySelector('.restart').addEventListener('click',handleRestartGame);
+        function handleCellClick(clickedCellEvent) {
+            const clickedCell = clickedCellEvent.target;
+            const clickedCellIndex = parseInt(clickedCell.getAttribute('i'));
+            if (gameState[clickedCellIndex] !== "" || !act) {
+                return;
+            }
+            handleCellPlayed(clickedCell, clickedCellIndex);
+            handledResultValidation();
+        }
+        function handleCellPlayed(clickedCell, clickedCellIndex) {
+            gameState[clickedCellIndex] = cplayer;
+            clickedCell.innerHTML = cplayer;
+        }
+        const winningConditions=[
+            [0,1,2],
+            [3,4,5],
+            [6,7,8],
+            [0,3,6],
+            [1,4,7],
+            [2,5,8],
+            [0,4,8],
+            [2,4,6]
+        ];
+        let playerXScore = 0;
+        let playerOScore = 0;
+        function handledResultValidation(){
+            let r=false;
+            let wc=[];
+            for (let i=0;i<=7;i++){
+                const winCondition=winningConditions[i];
+                let a=gameState[winCondition[0]];
+                let b=gameState[winCondition[1]];
+                let c=gameState[winCondition[2]];
+                if(a==='' || b==='' || c===''){
+                    continue;
+                }
+                if(a===b && b===c){
+                    r=true;
+                    wc=winCondition;
+                    break;
+                }
+            }
+            if (r) {
+                display.innerHTML = winmsg();
+                act = false;
+                if (cplayer === "X") {
+                    playerXScore++;
+                    document.getElementById('playerX-score').innerHTML = playerXScore;
+                } else {
+                    playerOScore++;
+                    document.getElementById('playerO-score').innerHTML = playerOScore;
+                }
+                highlightWinningCells(wc);
+                return;
+            }
+            let rd=!gameState.includes("");
+            if(rd){
+                display.innerHTML=drawmsg();
+                act=false;
+                return;
+            }
+            handlePlayerChange();
+        }
+        function highlightWinningCells(wc){
+            wc.forEach(index=>{
+                document.querySelector(`[i="${index}"]`).classList.add('highlight');
+            });
+        }
+        function handlePlayerChange() {
+            cplayer = cplayer === "X" ? "O" : "X";
+            display.innerHTML = cplayerturn();
+            document.querySelectorAll('.align').forEach(cell => {
+                cell.classList.remove('current-player-x', 'current-player-o');
+                if (cplayer === "X") {
+                    cell.classList.add('current-player-x');
+                } else {
+                    cell.classList.add('current-player-o');
+                }
+            });
+        }
+        function handleRestartGame() {
+            act = true;
+            cplayer = "X";
+            gameState = ["", "", "", "", "", "", "", "", ""];
+            document.querySelectorAll('.align').forEach(cell => cell.innerHTML = "");
+            display.innerHTML = cplayerturn();
+            document.querySelectorAll('.align').forEach(cell => {
+                cell.innerHTML = "";
+                cell.classList.remove('highlight');
+            });
+        }
+    </script>
+</body>
+</html>
